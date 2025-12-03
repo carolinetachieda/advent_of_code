@@ -3,43 +3,63 @@ package Three;
 import java.util.Scanner;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.PriorityQueue;
 
 public class ThreeDec {
     public static void main(String[] args) {
         try {
             Scanner sc = new Scanner(new File("Three/input.txt"));
-            // Scanner sc = new Scanner(System.in);
-            int totalJolts = 0;
-            
+            // Scanner sc = new Scanner(System.in); 
+
+            long totalJolts = 0L; 
+
+            //gå igennem alle linjer (banker) i inputfilen
             while (sc.hasNextLine()) {
-                String line = sc.nextLine();
-                String[][] banks = Arrays.stream(line.split("\n")).map(bank -> bank.split("")).toArray(String[][] :: new);
+                String line = sc.nextLine().trim();
 
-                for (String[] bank : banks) {
-                    PriorityQueue<Integer> pq = new PriorityQueue<>(Collections.reverseOrder()); //max heap
+                String bank = line;//hele rækken af batterier som en streng
+                int n = bank.length();    
+                int keep = 12;             
+                int toRemove = n - keep; 
+                StringBuilder sb = new StringBuilder(); //stack til det bedste tal
 
-                    for (int i = 0; i < bank.length; i++) { // alle i en bank
-                        for (int j = i+1; j < bank.length; j++) { // starter fra den næste efter i
-                            int joltage = Integer.parseInt(bank[i] + bank[j]); 
-                            pq.add(joltage); //lægger til kø
-                        }
+                // gå venstre -> højre igennem alle digits i banken
+                for (int i = 0; i < n; i++) {
+                    char d = bank.charAt(i); //nuværende
+
+                    while (toRemove > 0
+                            && sb.length() > 0
+                            && sb.charAt(sb.length() - 1) < d) {
+                        sb.deleteCharAt(sb.length() - 1); //fjern sidste d
+                        toRemove--;                     
                     }
-                    totalJolts += pq.poll(); //anden største//fjerner største
+
+                    //tilføj d til stack
+                    sb.append(d);
                 }
-              
+                while (toRemove > 0) {
+                    sb.deleteCharAt(sb.length() - 1);
+                    toRemove--;
+                }
+
+                if (sb.length() > keep) {
+                    sb.setLength(keep);
+                }
+
+                String joltageStr = sb.toString();
+                long joltage = Long.parseLong(joltageStr);
+
+                //læg til totalen
+                totalJolts += joltage;
             }
-
             System.out.println("Total jolts: " + totalJolts);
-            sc.close();
 
+            sc.close();
         } catch (FileNotFoundException e) {
             System.out.println("File not found.");
         }
     }
 }
+
 /*
  * joltage rating, a value from 1 to 9.
  * For example, if you have a bank like 12345 and you turn on batteries 2 and 4,
